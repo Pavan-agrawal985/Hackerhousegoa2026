@@ -42,22 +42,19 @@ export default function Home() {
       <div className="pointer-events-none absolute -top-24 right-[20%] h-96 w-96 rounded-full bg-goa-sunset1/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-10%] left-[10%] h-96 w-96 rounded-full bg-goa-teal/10 blur-3xl" />
 
-      {/* Left Panel - Controls */}
-      <div className="relative z-10 flex w-full max-w-lg flex-col gap-6 overflow-y-auto p-8 lg:p-12">
+      {/* Left Column - Form Fields */}
+      <div className="relative z-10 flex w-80 flex-col gap-6 overflow-y-auto border-r border-white/10 bg-black/10 p-6 backdrop-blur-sm">
         {/* Header */}
         <header className="flex flex-col gap-3">
           <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-goa-sunset1 to-goa-sunset2 px-4 py-1.5 shadow-lg shadow-orange-900/30 w-fit">
-            <Logo className="h-5 w-5" />
-            <span className="text-[11px] font-extrabold tracking-[0.2em] text-white">
+            <Logo className="h-4 w-4" />
+            <span className="text-[10px] font-extrabold tracking-[0.2em] text-white">
               HH GOA 2026
             </span>
           </div>
-          <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-goa-sand via-goa-sunset2 to-goa-teal">
-            Builder ID Card
+          <h1 className="text-2xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-goa-sand via-goa-sunset2 to-goa-teal">
+            Builder Card
           </h1>
-          <p className="text-sm text-goa-sand/60">
-            Create your personalized card in seconds
-          </p>
         </header>
 
         {/* Upload */}
@@ -72,22 +69,38 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto flex flex-col gap-1 text-[11px] text-goa-sand/30">
-          <span>#FrameInGoa · #HackerHouse · #HHGoa2026</span>
-          <span>28–31 Oct 2026 · Goa, India</span>
+        <footer className="mt-auto flex flex-col gap-1 text-[10px] text-goa-sand/30">
+          <span>#FrameInGoa</span>
+          <span>Oct 28-31, 2026</span>
         </footer>
       </div>
 
-      {/* Right Panel - Card Preview */}
-      <div className="relative z-10 hidden flex-1 items-center justify-center overflow-y-auto bg-gradient-to-br from-black/20 to-black/5 p-8 backdrop-blur-sm lg:flex">
+      {/* Middle Column - Card Preview */}
+      <div className="relative z-10 flex flex-1 items-center justify-center overflow-y-auto p-8">
         <div className="flex h-full w-full items-center justify-center">
-          <CardPreview image={image} fields={fields} uploadFile={uploadFile} />
+          <CardPreview image={image} fields={fields} uploadFile={uploadFile} showControlsInSidebar={true} />
         </div>
       </div>
 
-      {/* Mobile: Show preview below on small screens */}
-      <div className="relative z-10 flex w-full items-center justify-center p-8 lg:hidden">
-        <CardPreview image={image} fields={fields} uploadFile={uploadFile} />
+      {/* Right Column - Controls */}
+      <div className="relative z-10 flex w-80 flex-col gap-6 overflow-y-auto border-l border-white/10 bg-black/10 p-6 backdrop-blur-sm">
+        {image ? (
+          <>
+            <h2 className="text-lg font-bold text-white">Adjust & Share</h2>
+            
+            {/* This will be filled by CardPreview component */}
+            <div id="controls-sidebar"></div>
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl opacity-30 mb-4">🎴</div>
+              <p className="text-sm text-goa-sand/40">
+                Upload a photo to start
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
