@@ -259,8 +259,8 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   const title = (fields.title || "The Wave Rider").trim() || "The Wave Rider";
 
   // ---- MODERN CLEAN BACKGROUND ----
-  // Base cream/beige background
-  ctx.fillStyle = "#f5f0e8";
+  // Base greenish/mint background
+  ctx.fillStyle = "#e8f5f0";
   ctx.fillRect(0, 0, W, H);
 
   // Decorative side borders with gradient

@@ -41,32 +41,52 @@ export function CardPreview({ image, fields, uploadFile }: Props) {
   }
 
   async function handleShare() {
-    if (!uploadFile) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
     setShareState("preparing");
     setShareError(null);
+    
     try {
-      const form = new FormData();
-      form.append("photo", uploadFile);
-      form.append("name", fields.name);
-      form.append("stack", fields.stack);
-      form.append("title", fields.title);
-
-      const res = await fetch("/api/card", { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
-
-      const shareUrl = `${window.location.origin}/s/${data.id}`;
-      const tweetText = encodeURIComponent(
-        "Just got my HH Goa 2026 Builder Card 🌴🌊 See you on the beach! #FrameInGoa #HackerHouse #HHGoa2026"
-      );
-      const tweetIntent = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(
-        shareUrl
-      )}`;
-      setShareState("ready");
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) resolve(b);
+          else reject(new Error("Failed to create image"));
+        }, "image/png");
+      });
+      
+      // Create tweet text
+      const tweetText = `Just got my HH Goa 2026 Builder Card 🌴🌊 See you on the beach! #FrameInGoa #HackerHouse #HHGoa2026`;
+      
+      // Try native share API first (works on mobile)
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], "hh-goa-card.png", { type: "image/png" });
+        const shareData = { text: tweetText, files: [file] };
+        
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          setShareState("ready");
+          return;
+        }
+      }
+      
+      // Fallback: Open X/Twitter with text only
+      const tweetIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
       window.open(tweetIntent, "_blank", "noopener,noreferrer");
+      setShareState("ready");
+      
+      // Download image automatically so user can attach it manually
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeName = (fields.name || "builder").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      a.download = `hh-goa-2026-${safeName}-card.png`;
+      a.href = url;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (err) {
       setShareState("error");
-      setShareError(err instanceof Error ? err.message : "Couldn't prepare the share link.");
+      setShareError(err instanceof Error ? err.message : "Couldn't prepare the share.");
     }
   }
 
@@ -96,7 +116,7 @@ export function CardPreview({ image, fields, uploadFile }: Props) {
         <p className="text-xs text-goa-coral">{shareError}</p>
       )}
       {shareState === "ready" && (
-        <p className="text-xs text-goa-teal">Share link opened in a new tab ✓</p>
+        <p className="text-xs text-goa-teal">X opened with your message. Image downloaded - attach it to your post! ✓</p>
       )}
     </div>
   );
