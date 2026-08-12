@@ -221,12 +221,18 @@ Create yours: ${window.location.origin}`;
 
   return (
     <>
-      {/* Card Preview - Center */}
-      <div className="flex h-full max-h-[90vh] w-full max-w-xl items-center justify-center overflow-hidden rounded-3xl shadow-2xl shadow-black/60 ring-1 ring-white/10">
-        <canvas ref={canvasRef} className="block h-full w-auto" />
+      {/* Card Preview - Center Column */}
+      <div className="flex h-full max-h-[95vh] w-full items-center justify-center">
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/10">
+          <canvas 
+            ref={canvasRef} 
+            className="block h-auto max-h-[95vh] w-auto max-w-full"
+            style={{ aspectRatio: `${CARD_W}/${CARD_H}` }}
+          />
+        </div>
       </div>
 
-      {/* Controls - either in sidebar or below */}
+      {/* Controls - Portal to Right Sidebar */}
       {showControlsInSidebar && sidebarTarget
         ? createPortal(controls, sidebarTarget)
         : <div className="mt-6 w-full max-w-md">{controls}</div>

@@ -37,24 +37,27 @@ export default function Home() {
   }
 
   return (
-    <main className="relative flex h-screen w-full overflow-hidden bg-gradient-to-br from-goa-sunset1/5 via-transparent to-goa-teal/5">
+    <main className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Decorative ambient glows */}
-      <div className="pointer-events-none absolute -top-24 right-[20%] h-96 w-96 rounded-full bg-goa-sunset1/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-10%] left-[10%] h-96 w-96 rounded-full bg-goa-teal/10 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute -top-24 right-[20%] h-96 w-96 rounded-full bg-goa-sunset1/10 blur-3xl" />
+        <div className="absolute bottom-[-10%] left-[10%] h-96 w-96 rounded-full bg-goa-teal/10 blur-3xl" />
+      </div>
 
-      {/* Left Column - Form Fields */}
-      <div className="relative z-10 flex w-80 flex-col gap-6 overflow-y-auto border-r border-white/10 bg-black/10 p-6 backdrop-blur-sm">
+      {/* Left Column - Form Fields (Fixed Width) */}
+      <aside className="relative z-10 flex w-[320px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-black/20 p-6 backdrop-blur-sm">
         {/* Header */}
-        <header className="flex flex-col gap-3">
-          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-goa-sunset1 to-goa-sunset2 px-4 py-1.5 shadow-lg shadow-orange-900/30 w-fit">
+        <header className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-goa-sunset1 to-goa-sunset2 px-3 py-1 shadow-lg w-fit">
             <Logo className="h-4 w-4" />
             <span className="text-[10px] font-extrabold tracking-[0.2em] text-white">
               HH GOA 2026
             </span>
           </div>
-          <h1 className="text-2xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-goa-sand via-goa-sunset2 to-goa-teal">
+          <h1 className="text-xl font-bold leading-tight text-white">
             Builder Card
           </h1>
+          <p className="text-xs text-goa-sand/60">Create your personalized ID</p>
         </header>
 
         {/* Upload */}
@@ -64,44 +67,42 @@ export default function Home() {
         </div>
 
         {/* Fields */}
-        <div className="w-full">
+        <div className="w-full flex-1">
           <FieldsForm fields={fields} onChange={setFields} />
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto flex flex-col gap-1 text-[10px] text-goa-sand/30">
+        <footer className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-3 text-[10px] text-goa-sand/30">
           <span>#FrameInGoa</span>
-          <span>Oct 28-31, 2026</span>
+          <span>Oct 28-31, 2026 · Goa</span>
         </footer>
+      </aside>
+
+      {/* Middle Column - Card Preview (Flexible) */}
+      <div className="relative z-10 flex flex-1 items-center justify-center overflow-hidden bg-black/5 p-6">
+        <CardPreview image={image} fields={fields} uploadFile={uploadFile} showControlsInSidebar={true} />
       </div>
 
-      {/* Middle Column - Card Preview */}
-      <div className="relative z-10 flex flex-1 items-center justify-center overflow-y-auto p-8">
-        <div className="flex h-full w-full items-center justify-center">
-          <CardPreview image={image} fields={fields} uploadFile={uploadFile} showControlsInSidebar={true} />
-        </div>
-      </div>
-
-      {/* Right Column - Controls */}
-      <div className="relative z-10 flex w-80 flex-col gap-6 overflow-y-auto border-l border-white/10 bg-black/10 p-6 backdrop-blur-sm">
+      {/* Right Column - Controls (Fixed Width) */}
+      <aside className="relative z-10 flex w-[320px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-black/20 p-6 backdrop-blur-sm">
         {image ? (
           <>
             <h2 className="text-lg font-bold text-white">Adjust & Share</h2>
             
-            {/* This will be filled by CardPreview component */}
-            <div id="controls-sidebar"></div>
+            {/* This will be filled by CardPreview component via portal */}
+            <div id="controls-sidebar" className="flex flex-col gap-4"></div>
           </>
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl opacity-30 mb-4">🎴</div>
-              <p className="text-sm text-goa-sand/40">
+              <div className="mb-3 text-4xl opacity-30">🎴</div>
+              <p className="text-xs text-goa-sand/40">
                 Upload a photo to start
               </p>
             </div>
           </div>
         )}
-      </div>
+      </aside>
     </main>
   );
 }
