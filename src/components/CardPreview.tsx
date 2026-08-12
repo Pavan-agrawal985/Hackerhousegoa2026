@@ -115,35 +115,25 @@ Create yours: ${window.location.origin}`,
         }
       }
       
-      // Desktop: Upload original photo and generate card on server
-      const formData = new FormData();
-      formData.append("photo", uploadFile);
-      formData.append("name", fields.name || "");
-      formData.append("stack", fields.stack || "");
-      formData.append("title", fields.title || "");
+      // Desktop: Download the card and open X with generator link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeName = (fields.name || "builder").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      a.download = `hh-goa-2026-${safeName}-card.png`;
+      a.href = url;
+      a.click();
+      URL.revokeObjectURL(url);
       
-      const response = await fetch("/api/card", {
-        method: "POST",
-        body: formData,
-      });
-      
-      if (!response.ok) throw new Error("Failed to save card");
-      
-      const data = await response.json();
-      const cardUrl = `${window.location.origin}/s/${data.id}`;
-      
-      // Create tweet text with card link
+      // Create tweet text with only generator link
       const tweetText = `Just created my HH Goa 2026 Builder Card! 🌴🌊
 
-See you at the beach!
+Create yours: https://hackerhousegoa2026-six.vercel.app/
 
 #FrameInGoa #HackerHouse #HHGoa2026
 
-📍 Goa, India | Oct 28-31, 2026
-
-Check it out & create yours: ${cardUrl}`;
+📍 Goa, India | Oct 28-31, 2026`;
       
-      // Open X/Twitter with pre-filled text and card link
+      // Open X/Twitter with pre-filled text
       const tweetIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
       window.open(tweetIntent, "_blank", "noopener,noreferrer");
       
@@ -242,7 +232,7 @@ Check it out & create yours: ${cardUrl}`;
         <p className="text-center text-xs text-goa-coral">{shareError}</p>
       )}
       {shareState === "ready" && (
-        <p className="text-center text-xs text-goa-teal">✓ Draft ready! Your card link is included in the tweet.</p>
+        <p className="text-center text-xs text-goa-teal">✓ Card downloaded! Draft is ready to post.</p>
       )}
     </div>
   );
