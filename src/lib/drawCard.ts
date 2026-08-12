@@ -681,32 +681,32 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   });
 
   // ---- FOOTER ----
-  ty = ty + boxH + 50;
+  ty = ty + boxH + 35;
   
   ctx.textAlign = "center";
   ctx.fillStyle = "#0d5e4a";
   ctx.font = `900 24px ${FAMILY}`;
   ctx.letterSpacing = "4px";
-  ctx.fillText("#FRAMEINGOA", W / 2, ty + 30);
+  ctx.fillText("#FRAMEINGOA", W / 2, ty + 20);
   ctx.letterSpacing = "0px";
 
   // Date badge at bottom
   ctx.save();
   ctx.fillStyle = "#1f2937";
   ctx.beginPath();
-  rrect(ctx, W / 2 - 200, ty + 60, 400, 60, 30);
+  rrect(ctx, W / 2 - 200, ty + 45, 400, 60, 30);
   ctx.fill();
   
   ctx.textAlign = "center";
   ctx.fillStyle = "#fbbf24";
   ctx.font = `700 15px ${FAMILY}`;
-  ctx.fillText("OCT", W / 2 - 60, ty + 87);
+  ctx.fillText("OCT", W / 2 - 60, ty + 72);
   ctx.fillStyle = "#ffffff";
   ctx.font = `900 32px ${FAMILY}`;
-  ctx.fillText("28-31", W / 2 + 30, ty + 95);
+  ctx.fillText("28-31", W / 2 + 30, ty + 80);
   ctx.fillStyle = "#14b8a6";
   ctx.font = `700 15px ${FAMILY}`;
-  ctx.fillText("2026", W / 2 + 120, ty + 87);
+  ctx.fillText("2026", W / 2 + 120, ty + 72);
   ctx.restore();
 
   // Bottom decorative line
