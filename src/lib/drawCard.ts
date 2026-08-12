@@ -9,8 +9,8 @@
  * X share-link preview are pixel-identical.
  */
 
-export const CARD_W = 1080;
-export const CARD_H = 1620;
+export const CARD_W = 1200;
+export const CARD_H = 1800;
 
 export interface CardFields {
   name: string;
@@ -358,31 +358,41 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   ctx.letterSpacing = "0px";
 
   // ---- PHOTO SECTION ----
-  const PHOTO_SIZE = 420;
+  const PHOTO_SIZE = 550;
   const photoX = (W - PHOTO_SIZE) / 2;
-  const photoY = headerH + 50;
+  const photoY = headerH + 60;
 
-  // Photo frame with solid border
+  // Photo frame with solid border and shadow
   ctx.save();
+  // Shadow for depth
+  ctx.shadowColor = "rgba(0,0,0,0.15)";
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetY = 8;
+  
   // White background for photo
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 12, 0, Math.PI * 2);
+  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 15, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
   
+  ctx.save();
   // Circular photo clip
   ctx.beginPath();
   ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2, 0, Math.PI * 2);
   ctx.clip();
   
-  // Draw photo covering the circle
+  // Draw photo covering the circle with slight zoom effect
   const centerX = photoX + PHOTO_SIZE / 2;
   const centerY = photoY + PHOTO_SIZE / 2;
   const radius = PHOTO_SIZE / 2;
-  imgCover(ctx, img, centerX - radius, centerY - radius, radius * 2, radius * 2);
+  // Zoom in by 10% for better crop
+  const zoomFactor = 1.1;
+  const zoomedRadius = radius * zoomFactor;
+  imgCover(ctx, img, centerX - zoomedRadius, centerY - zoomedRadius, zoomedRadius * 2, zoomedRadius * 2);
   ctx.restore();
 
-  // Colorful border around photo
+  // Colorful border around photo with gradient
   const photoGrad = ctx.createLinearGradient(photoX, photoY, photoX + PHOTO_SIZE, photoY + PHOTO_SIZE);
   photoGrad.addColorStop(0, "#ff6b35");
   photoGrad.addColorStop(0.5, "#fbbf24");
@@ -390,8 +400,8 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   
   ctx.save();
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 12, 0, Math.PI * 2);
-  ctx.lineWidth = 10;
+  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 15, 0, Math.PI * 2);
+  ctx.lineWidth = 12;
   ctx.strokeStyle = photoGrad;
   ctx.stroke();
   ctx.restore();
@@ -516,7 +526,7 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   ctx.fillStyle = "#9ca3af";
   ctx.font = `700 20px ${FAMILY}`;
   ctx.letterSpacing = "3px";
-  ctx.fillText("#FRAMEGOA", W / 2, ty + 30);
+  ctx.fillText("#FRAMEINGOA", W / 2, ty + 30);
   ctx.letterSpacing = "0px";
 
   // Date badge at bottom
