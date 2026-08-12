@@ -258,10 +258,157 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   const stack = (fields.stack || "Fullstack · Builder").trim() || "Fullstack · Builder";
   const title = (fields.title || "The Wave Rider").trim() || "The Wave Rider";
 
-  // ---- MODERN CLEAN BACKGROUND ----
-  // Base greenish/mint background
-  ctx.fillStyle = "#e8f5f0";
-  ctx.fillRect(0, 0, W, H);
+  // ---- TROPICAL GOA BEACH BACKGROUND ----
+  // Ocean gradient - darker green at top to lighter at bottom
+  const oceanGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  oceanGrad.addColorStop(0, "#0d5e4a");
+  oceanGrad.addColorStop(0.5, "#168b6b");
+  oceanGrad.addColorStop(1, "#20a378");
+  ctx.fillStyle = oceanGrad;
+  ctx.fillRect(0, 0, W, H * 0.55);
+
+  // Sandy beach at bottom
+  const sandGrad = ctx.createLinearGradient(0, H * 0.55, 0, H);
+  sandGrad.addColorStop(0, "#f5f3ed");
+  sandGrad.addColorStop(0.3, "#f0ebe0");
+  sandGrad.addColorStop(1, "#e8e3d5");
+  ctx.fillStyle = sandGrad;
+  ctx.fillRect(0, H * 0.55, W, H * 0.45);
+
+  // Sun rays
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.strokeStyle = "#ffd700";
+  ctx.lineWidth = 6;
+  const sunX = W * 0.5, sunY = H * 0.22;
+  for (let i = 0; i < 16; i++) {
+    const angle = (Math.PI * 2 * i) / 16;
+    ctx.beginPath();
+    ctx.moveTo(sunX + Math.cos(angle) * 80, sunY + Math.sin(angle) * 80);
+    ctx.lineTo(sunX + Math.cos(angle) * 140, sunY + Math.sin(angle) * 140);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Big yellow sun
+  ctx.save();
+  ctx.fillStyle = "#ffd700";
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 85, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Sun glow
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = "#ffe44d";
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 105, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Sun reflection on water
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = "#ffd700";
+  for (let i = 0; i < 8; i++) {
+    ctx.fillRect(W / 2 - 40 + Math.random() * 80, sunY + 100 + i * 35, 60 - i * 6, 15);
+  }
+  ctx.restore();
+
+  // Ocean waves
+  ctx.save();
+  ctx.strokeStyle = "#0a4d3c";
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.4;
+  for (let row = 0; row < 8; row++) {
+    const y = H * 0.28 + row * 40;
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 80) {
+      if (x === 0) ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + 20, y - 6, x + 40, y);
+      ctx.quadraticCurveTo(x + 60, y + 6, x + 80, y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Beach umbrellas
+  function drawUmbrella(x: number, y: number, color1: string, color2: string) {
+    ctx.save();
+    // Pole
+    ctx.strokeStyle = "#8b7355";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + 50);
+    ctx.stroke();
+    
+    // Umbrella top
+    ctx.fillStyle = color1;
+    ctx.beginPath();
+    ctx.arc(x, y, 35, 0, Math.PI, true);
+    ctx.fill();
+    
+    // Stripes
+    ctx.fillStyle = color2;
+    ctx.beginPath();
+    ctx.moveTo(x - 15, y);
+    ctx.lineTo(x - 25, y - 20);
+    ctx.lineTo(x - 5, y - 30);
+    ctx.lineTo(x, y);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(x + 15, y);
+    ctx.lineTo(x + 25, y - 20);
+    ctx.lineTo(x + 5, y - 30);
+    ctx.lineTo(x, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  drawUmbrella(180, H * 0.54, "#ffd700", "#ffed4e");
+  drawUmbrella(W - 180, H * 0.54, "#ffd700", "#ffed4e");
+
+  // Palm trees - more detailed
+  function drawDetailedPalm(x: number, y: number, scale: number, flip: boolean) {
+    ctx.save();
+    // Trunk
+    ctx.strokeStyle = "#8b6f47";
+    ctx.lineWidth = 12 * scale;
+    ctx.beginPath();
+    const bendX = x + (flip ? -15 : 15) * scale;
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(bendX, y - 60 * scale, x, y - 120 * scale);
+    ctx.stroke();
+    
+    // Palm fronds
+    const palmTop = y - 120 * scale;
+    ctx.strokeStyle = "#1a7a5e";
+    ctx.lineWidth = 8 * scale;
+    const fronds = [
+      { angle: -60, len: 80 },
+      { angle: -30, len: 90 },
+      { angle: 0, len: 95 },
+      { angle: 30, len: 90 },
+      { angle: 60, len: 80 },
+    ];
+    
+    fronds.forEach(f => {
+      const rad = (f.angle * Math.PI) / 180;
+      ctx.beginPath();
+      ctx.moveTo(x, palmTop);
+      ctx.lineTo(x + Math.sin(rad) * f.len * scale, palmTop - Math.cos(rad) * f.len * scale);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  drawDetailedPalm(120, H * 0.55, 1.5, false);
+  drawDetailedPalm(W - 120, H * 0.55, 1.5, true);
+  drawDetailedPalm(280, H * 0.56, 1.2, false);
+  drawDetailedPalm(W - 280, H * 0.56, 1.2, true);
 
   // Decorative side borders with gradient
   const borderGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -271,25 +418,12 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   borderGrad.addColorStop(1, "#14b8a6");
   
   ctx.fillStyle = borderGrad;
-  ctx.fillRect(0, 0, 24, H);
-  ctx.fillRect(W - 24, 0, 24, H);
+  ctx.fillRect(0, 0, 20, H);
+  ctx.fillRect(W - 20, 0, 20, H);
 
   // Decorative top accent
-  ctx.fillStyle = "#1f2937";
-  ctx.fillRect(24, 0, W - 48, 8);
-
-  // Palm tree stamps in corners (subtle)
-  ctx.save();
-  ctx.globalAlpha = 0.08;
-  drawPalm(ctx, 110, 120, 1.2, false);
-  drawPalm(ctx, W - 110, 120, 1.2, true);
-  ctx.restore();
-
-  // Decorative wave pattern at bottom
-  ctx.save();
-  ctx.globalAlpha = 0.12;
-  drawWaves(ctx, W, H - 180, 0.8);
-  ctx.restore();
+  ctx.fillStyle = "#0d5e4a";
+  ctx.fillRect(20, 0, W - 40, 8);
 
   // ---- TOP HEADER ----
   const headerH = 180;
