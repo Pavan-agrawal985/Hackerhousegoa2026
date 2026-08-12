@@ -78,19 +78,21 @@ export default function Home() {
         </footer>
       </aside>
 
-      {/* Middle Column - Card Preview (Flexible) */}
+      {/* Middle Column - Card Preview ONLY */}
       <div className="relative z-10 flex flex-1 items-center justify-center overflow-hidden bg-black/5 p-6">
         <CardPreview image={image} fields={fields} uploadFile={uploadFile} showControlsInSidebar={true} />
       </div>
 
-      {/* Right Column - Controls (Fixed Width) */}
+      {/* Right Column - Controls ONLY (sliders and buttons) */}
       <aside className="relative z-10 flex w-[320px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-black/20 p-6 backdrop-blur-sm">
         {image ? (
           <>
-            <h2 className="text-lg font-bold text-white">Adjust & Share</h2>
+            <h2 className="text-base font-bold text-white">Adjust & Share</h2>
             
-            {/* This will be filled by CardPreview component via portal */}
-            <div id="controls-sidebar" className="flex flex-col gap-4"></div>
+            {/* Controls will be injected here via React Portal from CardPreview */}
+            <div id="controls-sidebar" className="flex flex-1 flex-col gap-4">
+              {/* Controls are injected here via React Portal */}
+            </div>
           </>
         ) : (
           <div className="flex h-full items-center justify-center">

@@ -26,7 +26,19 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
 
   useEffect(() => {
     if (showControlsInSidebar) {
-      setSidebarTarget(document.getElementById("controls-sidebar"));
+      // Keep checking until we find the target element
+      const findTarget = () => {
+        const target = document.getElementById("controls-sidebar");
+        if (target) {
+          setSidebarTarget(target);
+        } else {
+          // If not found, try again on next frame
+          requestAnimationFrame(findTarget);
+        }
+      };
+      findTarget();
+    } else {
+      setSidebarTarget(null);
     }
   }, [showControlsInSidebar]);
 
@@ -64,13 +76,13 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
 
   async function handleShare() {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !uploadFile) return;
     
     setShareState("preparing");
     setShareError(null);
     
     try {
-      // Convert canvas to blob
+      // Convert canvas to blob for native share
       const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((b) => {
           if (b) resolve(b);
@@ -78,12 +90,21 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
         }, "image/png");
       });
       
-      // Try native Web Share API with image (works on mobile)
-      if (navigator.share && navigator.canShare) {
+      // Try native Web Share API ONLY on mobile devices
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile && navigator.share && navigator.canShare) {
         const file = new File([blob], "hh-goa-2026-card.png", { type: "image/png" });
         const shareData = {
           title: "HH Goa 2026 Builder Card",
-          text: `Just created my HH Goa 2026 Builder Card! 🌴🌊\n\nSee you at the beach!\n\n#FrameInGoa #HackerHouse #HHGoa2026\n\n📍 Goa, India | Oct 28-31, 2026\n\nCreate yours: ${window.location.origin}`,
+          text: `Just created my HH Goa 2026 Builder Card! 🌴🌊
+
+See you at the beach!
+
+#FrameInGoa #HackerHouse #HHGoa2026
+
+📍 Goa, India | Oct 28-31, 2026
+
+Create yours: ${window.location.origin}`,
           files: [file]
         };
         
@@ -94,17 +115,24 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
         }
       }
       
-      // Fallback for desktop: Download + Open X
-      // Download image automatically
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const safeName = (fields.name || "builder").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      a.download = `hh-goa-2026-${safeName}-card.png`;
-      a.href = url;
-      a.click();
-      URL.revokeObjectURL(url);
+      // Desktop: Upload original photo and generate card on server
+      const formData = new FormData();
+      formData.append("photo", uploadFile);
+      formData.append("name", fields.name || "");
+      formData.append("stack", fields.stack || "");
+      formData.append("title", fields.title || "");
       
-      // Create tweet text with website link
+      const response = await fetch("/api/card", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error("Failed to save card");
+      
+      const data = await response.json();
+      const cardUrl = `${window.location.origin}/s/${data.id}`;
+      
+      // Create tweet text with card link
       const tweetText = `Just created my HH Goa 2026 Builder Card! 🌴🌊
 
 See you at the beach!
@@ -113,9 +141,9 @@ See you at the beach!
 
 📍 Goa, India | Oct 28-31, 2026
 
-Create yours: ${window.location.origin}`;
+Check it out & create yours: ${cardUrl}`;
       
-      // Open X/Twitter with pre-filled text
+      // Open X/Twitter with pre-filled text and card link
       const tweetIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
       window.open(tweetIntent, "_blank", "noopener,noreferrer");
       
@@ -214,29 +242,29 @@ Create yours: ${window.location.origin}`;
         <p className="text-center text-xs text-goa-coral">{shareError}</p>
       )}
       {shareState === "ready" && (
-        <p className="text-center text-xs text-goa-teal">✓ Ready to post! Attach the downloaded image.</p>
+        <p className="text-center text-xs text-goa-teal">✓ Draft ready! Your card link is included in the tweet.</p>
       )}
     </div>
   );
 
   return (
     <>
-      {/* Card Preview - Center Column */}
-      <div className="flex h-full max-h-[95vh] w-full items-center justify-center">
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/10">
-          <canvas 
-            ref={canvasRef} 
-            className="block h-auto max-h-[95vh] w-auto max-w-full"
-            style={{ aspectRatio: `${CARD_W}/${CARD_H}` }}
-          />
-        </div>
+      {/* Card Preview - Only the canvas */}
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/10">
+        <canvas 
+          ref={canvasRef} 
+          className="block h-auto max-h-[95vh] w-auto max-w-full"
+          style={{ aspectRatio: `${CARD_W}/${CARD_H}` }}
+        />
       </div>
 
-      {/* Controls - Portal to Right Sidebar */}
-      {showControlsInSidebar && sidebarTarget
-        ? createPortal(controls, sidebarTarget)
-        : <div className="mt-6 w-full max-w-md">{controls}</div>
-      }
+      {/* Controls - Only render via portal when sidebar mode is active */}
+      {showControlsInSidebar && sidebarTarget && createPortal(controls, sidebarTarget)}
+      
+      {/* Controls - Inline when not in sidebar mode */}
+      {!showControlsInSidebar && (
+        <div className="mt-6 w-full max-w-md">{controls}</div>
+      )}
     </>
   );
 }
