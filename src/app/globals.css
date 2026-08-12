@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --goa-deep: #05141c;
+  --goa-ocean: #0b5c82;
+  --goa-teal: #14b8a6;
+  --goa-sunset1: #ff6b35;
+  --goa-sunset2: #f7931e;
+  --goa-sand: #fde9c2;
+  --goa-coral: #ff4d6d;
+}
+
+@theme inline {
+  --color-goa-deep: var(--goa-deep);
+  --color-goa-ocean: var(--goa-ocean);
+  --color-goa-teal: var(--goa-teal);
+  --color-goa-sunset1: var(--goa-sunset1);
+  --color-goa-sunset2: var(--goa-sunset2);
+  --color-goa-sand: var(--goa-sand);
+  --color-goa-coral: var(--goa-coral);
+  --font-display: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(120% 90% at 100% 0%, rgba(255, 107, 53, 0.16), transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, rgba(20, 184, 166, 0.14), transparent 55%),
+    linear-gradient(165deg, #04121a 0%, #0a3348 46%, #0f2a20 100%);
+  color: var(--goa-sand);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100dvh;
+}
+
+::selection {
+  background: var(--goa-teal);
+  color: #04121a;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.35);
+  border-radius: 999px;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
