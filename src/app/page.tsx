@@ -37,32 +37,33 @@ export default function Home() {
   }
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center overflow-hidden px-4 pb-24 pt-10 sm:pt-14">
-      {/* decorative ambient glows */}
-      <div className="pointer-events-none absolute -top-24 right-[-10%] h-80 w-80 rounded-full bg-goa-sunset1/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-[-10%] h-72 w-72 rounded-full bg-goa-teal/15 blur-3xl" />
+    <main className="relative flex h-screen w-full overflow-hidden bg-gradient-to-br from-goa-sunset1/5 via-transparent to-goa-teal/5">
+      {/* Decorative ambient glows */}
+      <div className="pointer-events-none absolute -top-24 right-[20%] h-96 w-96 rounded-full bg-goa-sunset1/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-10%] left-[10%] h-96 w-96 rounded-full bg-goa-teal/10 blur-3xl" />
 
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
+      {/* Left Panel - Controls */}
+      <div className="relative z-10 flex w-full max-w-lg flex-col gap-6 overflow-y-auto p-8 lg:p-12">
         {/* Header */}
-        <header className="flex flex-col items-center gap-3 text-center">
-          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-goa-sunset1 to-goa-sunset2 px-4 py-1.5 shadow-lg shadow-orange-900/30">
+        <header className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-goa-sunset1 to-goa-sunset2 px-4 py-1.5 shadow-lg shadow-orange-900/30 w-fit">
             <Logo className="h-5 w-5" />
             <span className="text-[11px] font-extrabold tracking-[0.2em] text-white">
               HH GOA 2026
             </span>
           </div>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-goa-sand via-goa-sunset2 to-goa-teal">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-goa-sand via-goa-sunset2 to-goa-teal">
             Builder ID Card
           </h1>
           <p className="text-sm text-goa-sand/60">
-            Upload your photo, fill your details, download and share — one pass, no login.
+            Create your personalized card in seconds
           </p>
         </header>
 
         {/* Upload */}
         <div className="w-full">
           <UploadZone previewSrc={previewSrc} onFile={handleFile} busy={busy} />
-          {error && <p className="mt-2 text-center text-xs text-goa-coral">{error}</p>}
+          {error && <p className="mt-2 text-xs text-goa-coral">{error}</p>}
         </div>
 
         {/* Fields */}
@@ -70,19 +71,23 @@ export default function Home() {
           <FieldsForm fields={fields} onChange={setFields} />
         </div>
 
-        {/* Preview + actions */}
-        <CardPreview image={image} fields={fields} uploadFile={uploadFile} />
-
-        {!image && (
-          <p className="text-center text-xs text-goa-sand/40">
-            Your card appears instantly here the moment you upload a photo.
-          </p>
-        )}
-
-        <footer className="mt-6 flex flex-col items-center gap-1 text-center text-[11px] text-goa-sand/30">
+        {/* Footer */}
+        <footer className="mt-auto flex flex-col gap-1 text-[11px] text-goa-sand/30">
           <span>#FrameInGoa · #HackerHouse · #HHGoa2026</span>
           <span>28–31 Oct 2026 · Goa, India</span>
         </footer>
+      </div>
+
+      {/* Right Panel - Card Preview */}
+      <div className="relative z-10 hidden flex-1 items-center justify-center overflow-y-auto bg-gradient-to-br from-black/20 to-black/5 p-8 backdrop-blur-sm lg:flex">
+        <div className="flex h-full w-full items-center justify-center">
+          <CardPreview image={image} fields={fields} uploadFile={uploadFile} />
+        </div>
+      </div>
+
+      {/* Mobile: Show preview below on small screens */}
+      <div className="relative z-10 flex w-full items-center justify-center p-8 lg:hidden">
+        <CardPreview image={image} fields={fields} uploadFile={uploadFile} />
       </div>
     </main>
   );
