@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CARD_H, CARD_W, drawIdCard, type CardFields, type Ctx2D } from "@/lib/drawCard";
+import { CARD_H, CARD_W, drawIdCard, type CardFields, type Ctx2D, type PhotoAdjustments } from "@/lib/drawCard";
 
 interface Props {
   image: HTMLImageElement | null;
@@ -15,6 +15,11 @@ export function CardPreview({ image, fields, uploadFile }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shareState, setShareState] = useState<ShareState>("idle");
   const [shareError, setShareError] = useState<string | null>(null);
+  const [adjustments, setAdjustments] = useState<PhotoAdjustments>({
+    zoom: 1.0,
+    offsetX: 0,
+    offsetY: 0,
+  });
 
   // Instant client-side render — this is what makes it feel "a few seconds,
   // not a loading screen": no network round trip needed just to preview.
@@ -25,8 +30,8 @@ export function CardPreview({ image, fields, uploadFile }: Props) {
     canvas.height = CARD_H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawIdCard(ctx as unknown as Ctx2D, image, fields);
-  }, [image, fields]);
+    drawIdCard(ctx as unknown as Ctx2D, image, fields, adjustments);
+  }, [image, fields, adjustments]);
 
   if (!image) return null;
 
@@ -95,6 +100,72 @@ export function CardPreview({ image, fields, uploadFile }: Props) {
       <div className="w-full max-w-sm overflow-hidden rounded-3xl shadow-2xl shadow-black/60 ring-1 ring-white/10">
         <canvas ref={canvasRef} className="block w-full" />
       </div>
+
+      {/* Photo adjustment controls */}
+      {image && (
+        <div className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+          <h3 className="text-sm font-bold text-white">Adjust Photo</h3>
+          
+          {/* Zoom slider */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between text-xs text-goa-sand/70">
+              <span>🔍 Zoom</span>
+              <span>{adjustments.zoom.toFixed(1)}x</span>
+            </label>
+            <input
+              type="range"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              value={adjustments.zoom}
+              onChange={(e) => setAdjustments(prev => ({ ...prev, zoom: parseFloat(e.target.value) }))}
+              className="w-full accent-goa-sunset1"
+            />
+          </div>
+
+          {/* Horizontal position */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between text-xs text-goa-sand/70">
+              <span>↔️ Horizontal</span>
+              <span>{adjustments.offsetX}</span>
+            </label>
+            <input
+              type="range"
+              min="-150"
+              max="150"
+              step="5"
+              value={adjustments.offsetX}
+              onChange={(e) => setAdjustments(prev => ({ ...prev, offsetX: parseInt(e.target.value) }))}
+              className="w-full accent-goa-teal"
+            />
+          </div>
+
+          {/* Vertical position */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between text-xs text-goa-sand/70">
+              <span>↕️ Vertical</span>
+              <span>{adjustments.offsetY}</span>
+            </label>
+            <input
+              type="range"
+              min="-150"
+              max="150"
+              step="5"
+              value={adjustments.offsetY}
+              onChange={(e) => setAdjustments(prev => ({ ...prev, offsetY: parseInt(e.target.value) }))}
+              className="w-full accent-goa-teal"
+            />
+          </div>
+
+          {/* Reset button */}
+          <button
+            onClick={() => setAdjustments({ zoom: 1.0, offsetX: 0, offsetY: 0 })}
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+          >
+            Reset to Default
+          </button>
+        </div>
+      )}
 
       <div className="flex w-full max-w-sm flex-wrap items-center justify-center gap-3">
         <button

@@ -18,6 +18,12 @@ export interface CardFields {
   title: string;
 }
 
+export interface PhotoAdjustments {
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 // Minimal structural typing so this file has zero hard dependency on either
 // lib.dom's CanvasRenderingContext2D or @napi-rs/canvas's types.
 export interface Ctx2D {
@@ -250,13 +256,18 @@ function fitText(
 
 const FAMILY = '"Space Grotesk", "Segoe UI", -apple-system, Arial, sans-serif';
 
-export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
+export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, adjustments?: PhotoAdjustments) {
   const W = CARD_W;
   const H = CARD_H;
 
   const name = (fields.name || "Your Name").trim() || "Your Name";
   const stack = (fields.stack || "Fullstack · Builder").trim() || "Fullstack · Builder";
   const title = (fields.title || "The Wave Rider").trim() || "The Wave Rider";
+  
+  // Default adjustments
+  const zoom = adjustments?.zoom ?? 1.0;
+  const userOffsetX = adjustments?.offsetX ?? 0;
+  const userOffsetY = adjustments?.offsetY ?? 0;
 
   // ---- TROPICAL GOA BEACH BACKGROUND ----
   // Ocean gradient - darker green at top to lighter at bottom
@@ -494,19 +505,19 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   // ---- PHOTO SECTION ----
   const PHOTO_SIZE = 550;
   const photoX = (W - PHOTO_SIZE) / 2;
-  const photoY = headerH + 60;
+  const photoY = headerH + 70;
 
   // Photo frame with solid border and shadow
   ctx.save();
   // Shadow for depth
-  ctx.shadowColor = "rgba(0,0,0,0.15)";
-  ctx.shadowBlur = 25;
-  ctx.shadowOffsetY = 8;
+  ctx.shadowColor = "rgba(0,0,0,0.2)";
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 10;
   
   // White background for photo
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 15, 0, Math.PI * 2);
+  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 18, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
   
@@ -516,26 +527,42 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2, 0, Math.PI * 2);
   ctx.clip();
   
-  // Draw photo covering the circle with slight zoom effect
+  // Draw photo with user adjustments
   const centerX = photoX + PHOTO_SIZE / 2;
   const centerY = photoY + PHOTO_SIZE / 2;
   const radius = PHOTO_SIZE / 2;
-  // Zoom in by 10% for better crop
-  const zoomFactor = 1.1;
-  const zoomedRadius = radius * zoomFactor;
-  imgCover(ctx, img, centerX - zoomedRadius, centerY - zoomedRadius, zoomedRadius * 2, zoomedRadius * 2);
+  
+  // Calculate cover dimensions with zoom
+  const imgAspect = img.width / img.height;
+  let drawW, drawH;
+  
+  if (imgAspect > 1) {
+    // Landscape - use height
+    drawH = radius * 2 * zoom;
+    drawW = drawH * imgAspect;
+  } else {
+    // Portrait - use width  
+    drawW = radius * 2 * zoom;
+    drawH = drawW / imgAspect;
+  }
+  
+  // Apply user offsets
+  const offsetX = centerX - drawW / 2 + userOffsetX;
+  const offsetY = centerY - drawH / 2 + userOffsetY;
+  
+  ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
   ctx.restore();
 
   // Colorful border around photo with gradient
   const photoGrad = ctx.createLinearGradient(photoX, photoY, photoX + PHOTO_SIZE, photoY + PHOTO_SIZE);
   photoGrad.addColorStop(0, "#ff6b35");
-  photoGrad.addColorStop(0.5, "#fbbf24");
+  photoGrad.addColorStop(0.5, "#ffd700");
   photoGrad.addColorStop(1, "#14b8a6");
   
   ctx.save();
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 15, 0, Math.PI * 2);
-  ctx.lineWidth = 12;
+  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 18, 0, Math.PI * 2);
+  ctx.lineWidth = 14;
   ctx.strokeStyle = photoGrad;
   ctx.stroke();
   ctx.restore();
@@ -595,28 +622,28 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   
   const infoBoxes = [
     { 
-      icon: (c: Ctx2D, x: number, y: number) => iconStar(c, x, y, 16, "#fbbf24"),
+      icon: (c: Ctx2D, x: number, y: number) => iconStar(c, x, y, 18, "#fbbf24"),
       label: "BUILDER CLASS",
       value: "TERMINAL\nWIZARD",
       color: "#10b981"
     },
     { 
-      icon: (c: Ctx2D, x: number, y: number) => iconTicket(c, x, y, 36, "#ff6b35"),
+      icon: (c: Ctx2D, x: number, y: number) => iconTicket(c, x, y, 40, "#ff6b35"),
       label: "BEACH BAG",
       value: "COCONUT\nVS CODE",
       color: "#3b82f6"
     },
     { 
-      icon: (c: Ctx2D, x: number, y: number) => iconPin(c, x, y, 38, "#14b8a6"),
+      icon: (c: Ctx2D, x: number, y: number) => iconPin(c, x, y, 42, "#14b8a6"),
       label: "CURRENTLY SHIPPING",
       value: "BUILDING\nTHE FUTURE",
       color: "#8b5cf6"
     }
   ];
 
-  const boxW = 280;
-  const boxH = 200;
-  const boxGap = 50;
+  const boxW = 300;
+  const boxH = 210;
+  const boxGap = 60;
   const totalBoxW = (boxW * 3) + (boxGap * 2);
   const startX = (W - totalBoxW) / 2;
 
@@ -625,31 +652,31 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
     
     ctx.save();
     ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "rgba(0,0,0,0.08)";
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetY = 3;
+    ctx.shadowColor = "rgba(0,0,0,0.1)";
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetY = 5;
     ctx.beginPath();
-    rrect(ctx, bx, ty, boxW, boxH, 16);
+    rrect(ctx, bx, ty, boxW, boxH, 20);
     ctx.fill();
     ctx.restore();
     
     // Icon
-    box.icon(ctx, bx + boxW / 2, ty + 50);
+    box.icon(ctx, bx + boxW / 2, ty + 55);
     
     // Label
     ctx.textAlign = "center";
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = `700 14px ${FAMILY}`;
-    ctx.letterSpacing = "1.5px";
-    ctx.fillText(box.label, bx + boxW / 2, ty + 100);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `700 15px ${FAMILY}`;
+    ctx.letterSpacing = "2px";
+    ctx.fillText(box.label, bx + boxW / 2, ty + 110);
     ctx.letterSpacing = "0px";
     
     // Value
     ctx.fillStyle = box.color;
-    ctx.font = `800 22px ${FAMILY}`;
+    ctx.font = `900 26px ${FAMILY}`;
     const lines = box.value.split("\n");
     lines.forEach((line, li) => {
-      ctx.fillText(line, bx + boxW / 2, ty + 136 + li * 30);
+      ctx.fillText(line, bx + boxW / 2, ty + 148 + li * 32);
     });
   });
 
@@ -657,9 +684,9 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields) {
   ty = ty + boxH + 50;
   
   ctx.textAlign = "center";
-  ctx.fillStyle = "#9ca3af";
-  ctx.font = `700 20px ${FAMILY}`;
-  ctx.letterSpacing = "3px";
+  ctx.fillStyle = "#0d5e4a";
+  ctx.font = `900 24px ${FAMILY}`;
+  ctx.letterSpacing = "4px";
   ctx.fillText("#FRAMEINGOA", W / 2, ty + 30);
   ctx.letterSpacing = "0px";
 
