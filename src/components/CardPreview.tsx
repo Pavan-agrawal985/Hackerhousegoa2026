@@ -23,6 +23,15 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
     offsetY: 0,
   });
   const [sidebarTarget, setSidebarTarget] = useState<HTMLElement | null>(null);
+  const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
+
+  // Load logo image
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/logo-247.png";
+    img.onload = () => setLogoImage(img);
+    img.onerror = () => console.log("Logo not found, using text fallback");
+  }, []);
 
   useEffect(() => {
     if (showControlsInSidebar) {
@@ -50,8 +59,8 @@ export function CardPreview({ image, fields, uploadFile, showControlsInSidebar =
     canvas.height = CARD_H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    drawIdCard(ctx as unknown as Ctx2D, image, fields, adjustments);
-  }, [image, fields, adjustments]);
+    drawIdCard(ctx as unknown as Ctx2D, image, fields, adjustments, logoImage || undefined);
+  }, [image, fields, adjustments, logoImage]);
 
   if (!image) {
     return (

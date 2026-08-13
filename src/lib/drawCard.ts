@@ -90,6 +90,19 @@ function rrect(ctx: Ctx2D, x: number, y: number, w: number, h: number, r: number
   ctx.closePath();
 }
 
+function archShape(ctx: Ctx2D, x: number, y: number, w: number, h: number, r: number) {
+  // Door/arch shape: rounded top, straight bottom
+  const rr = Math.min(r, w / 2);
+  ctx.moveTo(x, y + h); // Start at bottom left
+  ctx.lineTo(x, y + rr); // Left side up
+  ctx.arcTo(x, y, x + rr, y, rr); // Top left corner
+  ctx.lineTo(x + w - rr, y); // Top edge
+  ctx.arcTo(x + w, y, x + w, y + rr, rr); // Top right corner
+  ctx.lineTo(x + w, y + h); // Right side down
+  ctx.lineTo(x, y + h); // Bottom edge
+  ctx.closePath();
+}
+
 function imgCover(
   ctx: Ctx2D,
   img: DrawableImage,
@@ -256,7 +269,7 @@ function fitText(
 
 const FAMILY = '"Space Grotesk", "Segoe UI", -apple-system, Arial, sans-serif';
 
-export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, adjustments?: PhotoAdjustments) {
+export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, adjustments?: PhotoAdjustments, logoImg?: DrawableImage) {
   const W = CARD_W;
   const H = CARD_H;
 
@@ -437,74 +450,71 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   ctx.fillRect(20, 0, W - 40, 8);
 
   // ---- TOP HEADER ----
-  const headerH = 180;
-  
-  // "GOA INDIA" stamp top left
+  const headerH = 200;
+
+  // Logo - top left corner (if provided)
+  if (logoImg) {
+    ctx.save();
+    // Draw logo image in top left
+    const logoW = 150;
+    const logoH = (logoImg.height / logoImg.width) * logoW;
+    ctx.drawImage(logoImg, 50, 50, logoW, logoH);
+    ctx.restore();
+  } else {
+    // Fallback: 2:47PM STUDIO text logo
+    ctx.save();
+    ctx.textAlign = "left";
+    
+    ctx.fillStyle = "#ffd700";
+    ctx.font = `900 48px ${FAMILY}`;
+    ctx.letterSpacing = "2px";
+    ctx.fillText("2:47PM", 50, 80);
+    
+    ctx.fillStyle = "#ffd700";
+    ctx.font = `900 36px ${FAMILY}`;
+    ctx.letterSpacing = "8px";
+    ctx.fillText("STUDIO", 50, 125);
+    ctx.letterSpacing = "0px";
+    ctx.restore();
+  }
+
+  // HACKER गोवा HOUSE - top right corner (smaller)
   ctx.save();
-  ctx.fillStyle = "#1f2937";
-  ctx.beginPath();
-  rrect(ctx, 60, 40, 160, 70, 8);
-  ctx.fill();
-  ctx.strokeStyle = "#ff6b35";
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  ctx.textAlign = "right";
   
-  ctx.fillStyle = "#ff6b35";
-  ctx.textAlign = "center";
-  ctx.font = `800 20px ${FAMILY}`;
-  ctx.letterSpacing = "2px";
-  ctx.fillText("GOA", 140, 70);
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = `700 16px ${FAMILY}`;
-  ctx.fillText("INDIA", 140, 94);
+  // HACKER in yellow
+  ctx.fillStyle = "#ffd700";
+  ctx.font = `900 32px ${FAMILY}`;
+  ctx.letterSpacing = "3px";
+  ctx.fillText("HACKER", W - 50, 65);
+  ctx.letterSpacing = "0px";
+  
+  // गोवा in yellow
+  ctx.fillStyle = "#ffd700";
+  ctx.font = `900 28px ${FAMILY}`;
+  ctx.fillText("गोवा", W - 50, 95);
+  
+  // HOUSE in yellow
+  ctx.fillStyle = "#ffd700";
+  ctx.font = `900 32px ${FAMILY}`;
+  ctx.letterSpacing = "3px";
+  ctx.fillText("HOUSE", W - 50, 125);
   ctx.letterSpacing = "0px";
   ctx.restore();
 
-  // "HH GOA 2026" badge top right
-  ctx.save();
-  ctx.fillStyle = "#1f2937";
-  ctx.beginPath();
-  rrect(ctx, W - 220, 40, 160, 70, 8);
-  ctx.fill();
-  ctx.strokeStyle = "#14b8a6";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  
-  ctx.fillStyle = "#14b8a6";
+  // Subtitle - centered
   ctx.textAlign = "center";
-  ctx.font = `800 22px ${FAMILY}`;
-  ctx.fillText("HH GOA", W - 140, 72);
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = `700 20px ${FAMILY}`;
-  ctx.fillText("2026", W - 140, 98);
-  ctx.restore();
-
-  // Main title
-  ctx.textAlign = "center";
-  ctx.font = `900 56px ${FAMILY}`;
-  ctx.fillStyle = "#1f2937";
-  ctx.letterSpacing = "4px";
-  ctx.fillText("HACKER", W / 2 - 160, 82);
-  
-  // Hindi "गोवा" accent
-  ctx.fillStyle = "#ff6b35";
-  ctx.font = `700 36px ${FAMILY}`;
-  ctx.fillText("गोवा", W / 2 + 10, 68);
-  
-  ctx.fillStyle = "#1f2937";
-  ctx.font = `900 56px ${FAMILY}`;
-  ctx.fillText("HOUSE", W / 2 + 160, 82);
-  ctx.letterSpacing = "0px";
-
-  ctx.font = `700 24px ${FAMILY}`;
-  ctx.fillStyle = "#ff6b35";
-  ctx.letterSpacing = "8px";
-  ctx.fillText("BUILD · SHIP · REPEAT", W / 2, 130);
+  ctx.font = `900 28px ${FAMILY}`;
+  ctx.fillStyle = "#ffd700";
+  ctx.letterSpacing = "10px";
+  ctx.fillText("BUILD · SHIP · REPEAT", W / 2, 85);
   ctx.letterSpacing = "0px";
 
   // ---- PHOTO SECTION ----
-  const PHOTO_SIZE = 550;
-  const photoX = (W - PHOTO_SIZE) / 2;
+  const PHOTO_WIDTH = 400; // Narrower width
+  const borderY = H * 0.55; // Green/sand border
+  const PHOTO_HEIGHT = borderY - (headerH + 70); // Extend to border
+  const photoX = (W - PHOTO_WIDTH) / 2;
   const photoY = headerH + 70;
 
   // Photo frame with solid border and shadow
@@ -514,23 +524,22 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   ctx.shadowBlur = 30;
   ctx.shadowOffsetY = 10;
   
-  // White background for photo
+  // White background for photo - arch shape (rounded top, flat bottom)
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 18, 0, Math.PI * 2);
+  archShape(ctx, photoX - 18, photoY - 18, PHOTO_WIDTH + 36, PHOTO_HEIGHT + 36, PHOTO_WIDTH / 2);
   ctx.fill();
   ctx.restore();
   
   ctx.save();
-  // Circular photo clip
+  // Arch photo clip
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2, 0, Math.PI * 2);
+  archShape(ctx, photoX, photoY, PHOTO_WIDTH, PHOTO_HEIGHT, PHOTO_WIDTH / 2);
   ctx.clip();
   
   // Draw photo with user adjustments
-  const centerX = photoX + PHOTO_SIZE / 2;
-  const centerY = photoY + PHOTO_SIZE / 2;
-  const radius = PHOTO_SIZE / 2;
+  const centerX = photoX + PHOTO_WIDTH / 2;
+  const centerY = photoY + PHOTO_HEIGHT / 2;
   
   // Calculate cover dimensions with zoom
   const imgAspect = img.width / img.height;
@@ -538,11 +547,11 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   
   if (imgAspect > 1) {
     // Landscape - use height
-    drawH = radius * 2 * zoom;
+    drawH = PHOTO_HEIGHT * zoom;
     drawW = drawH * imgAspect;
   } else {
     // Portrait - use width  
-    drawW = radius * 2 * zoom;
+    drawW = PHOTO_WIDTH * zoom;
     drawH = drawW / imgAspect;
   }
   
@@ -553,22 +562,119 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
   ctx.restore();
 
-  // Colorful border around photo with gradient
-  const photoGrad = ctx.createLinearGradient(photoX, photoY, photoX + PHOTO_SIZE, photoY + PHOTO_SIZE);
+  // Colorful border around photo with gradient - arch shape
+  const photoGrad = ctx.createLinearGradient(photoX, photoY, photoX + PHOTO_WIDTH, photoY + PHOTO_HEIGHT);
   photoGrad.addColorStop(0, "#ff6b35");
   photoGrad.addColorStop(0.5, "#ffd700");
   photoGrad.addColorStop(1, "#14b8a6");
   
   ctx.save();
   ctx.beginPath();
-  ctx.arc(photoX + PHOTO_SIZE / 2, photoY + PHOTO_SIZE / 2, PHOTO_SIZE / 2 + 18, 0, Math.PI * 2);
+  archShape(ctx, photoX - 18, photoY - 18, PHOTO_WIDTH + 36, PHOTO_HEIGHT + 36, PHOTO_WIDTH / 2);
   ctx.lineWidth = 14;
   ctx.strokeStyle = photoGrad;
   ctx.stroke();
   ctx.restore();
 
-  // ---- NAME SECTION ----
-  let ty = photoY + PHOTO_SIZE + 80;
+  // ---- FOOTER ---- 
+  // Position footer elements at the bottom
+  const footerY = H - 180;
+  
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#0d5e4a";
+  ctx.font = `900 24px ${FAMILY}`;
+  ctx.letterSpacing = "4px";
+  ctx.fillText("#FRAMEINGOA", W / 2, footerY);
+  ctx.letterSpacing = "0px";
+
+  // Date badge at bottom
+  ctx.save();
+  ctx.fillStyle = "#1f2937";
+  ctx.beginPath();
+  rrect(ctx, W / 2 - 200, footerY + 25, 400, 60, 30);
+  ctx.fill();
+  
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = `700 15px ${FAMILY}`;
+  ctx.fillText("OCT", W / 2 - 80, footerY + 52);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `900 32px ${FAMILY}`;
+  ctx.fillText("28-31", W / 2, footerY + 60);
+  ctx.fillStyle = "#14b8a6";
+  ctx.font = `700 15px ${FAMILY}`;
+  ctx.fillText("2026", W / 2 + 80, footerY + 52);
+  ctx.restore();
+
+  // ---- INFO GRID ---- (positioned above footer)
+  let ty = footerY - 250;
+  
+  const infoBoxes = [
+    { 
+      icon: (c: Ctx2D, x: number, y: number) => iconStar(c, x, y, 18, "#fbbf24"),
+      label: "SUPERPOWER",
+      value: "CODE +\nCOCONUTS",
+      color: "#ffffff"
+    },
+    { 
+      icon: (c: Ctx2D, x: number, y: number) => iconTicket(c, x, y, 40, "#ff6b35"),
+      label: "VIBE CHECK",
+      value: "BUILD · BEACH\nREPEAT",
+      color: "#ffffff"
+    },
+    { 
+      icon: (c: Ctx2D, x: number, y: number) => iconPin(c, x, y, 42, "#14b8a6"),
+      label: "MISSION STATUS",
+      value: "SHIPPING\nTHE DREAM",
+      color: "#ffffff"
+    }
+  ];
+
+  const boxW = 300;
+  const boxH = 210;
+  const boxGap = 60;
+  const totalBoxW = (boxW * 3) + (boxGap * 2);
+  const startX = (W - totalBoxW) / 2;
+
+  infoBoxes.forEach((box, i) => {
+    const bx = startX + i * (boxW + boxGap);
+    
+    ctx.save();
+    // Green gradient background
+    const greenGrad = ctx.createLinearGradient(bx, ty, bx, ty + boxH);
+    greenGrad.addColorStop(0, "#0d8b5e");
+    greenGrad.addColorStop(1, "#0d5e4a");
+    ctx.fillStyle = greenGrad;
+    ctx.shadowColor = "rgba(0,0,0,0.1)";
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetY = 5;
+    ctx.beginPath();
+    rrect(ctx, bx, ty, boxW, boxH, 20);
+    ctx.fill();
+    ctx.restore();
+    
+    // Icon
+    box.icon(ctx, bx + boxW / 2, ty + 55);
+    
+    // Label
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = `700 15px ${FAMILY}`;
+    ctx.letterSpacing = "2px";
+    ctx.fillText(box.label, bx + boxW / 2, ty + 110);
+    ctx.letterSpacing = "0px";
+    
+    // Value
+    ctx.fillStyle = box.color;
+    ctx.font = `900 26px ${FAMILY}`;
+    const lines = box.value.split("\n");
+    lines.forEach((line, li) => {
+      ctx.fillText(line, bx + boxW / 2, ty + 148 + li * 32);
+    });
+  });
+
+  // ---- NAME SECTION ---- (positioned above info boxes)
+  ty = ty - 280; // Position name card above info boxes
 
   // Name background card
   const nameCardY = ty - 50;
@@ -588,9 +694,9 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   ctx.fillStyle = photoGrad;
   ctx.fillRect(100, nameCardY + 10, W - 200, 6);
 
-  // Name
+  // Name - green color
   ctx.textAlign = "center";
-  ctx.fillStyle = "#1f2937";
+  ctx.fillStyle = "#0d5e4a";
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
   fitText(ctx, name, W - 200, 72, 42, "900", FAMILY);
@@ -612,103 +718,10 @@ export function drawIdCard(ctx: Ctx2D, img: DrawableImage, fields: CardFields, a
   ctx.fillText(stack, W / 2, ty + 88);
   ctx.restore();
 
-  // Title
-  ctx.fillStyle = "#6b7280";
+  // Title - green color
+  ctx.fillStyle = "#0d5e4a";
   ctx.font = `italic 600 24px ${FAMILY}`;
   ctx.fillText(title, W / 2, ty + 150);
-
-  // ---- INFO GRID ----
-  ty = nameCardY + nameCardH + 60;
-  
-  const infoBoxes = [
-    { 
-      icon: (c: Ctx2D, x: number, y: number) => iconStar(c, x, y, 18, "#fbbf24"),
-      label: "BUILDER CLASS",
-      value: "TERMINAL\nWIZARD",
-      color: "#10b981"
-    },
-    { 
-      icon: (c: Ctx2D, x: number, y: number) => iconTicket(c, x, y, 40, "#ff6b35"),
-      label: "BEACH BAG",
-      value: "COCONUT\nVS CODE",
-      color: "#3b82f6"
-    },
-    { 
-      icon: (c: Ctx2D, x: number, y: number) => iconPin(c, x, y, 42, "#14b8a6"),
-      label: "CURRENTLY SHIPPING",
-      value: "BUILDING\nTHE FUTURE",
-      color: "#8b5cf6"
-    }
-  ];
-
-  const boxW = 300;
-  const boxH = 210;
-  const boxGap = 60;
-  const totalBoxW = (boxW * 3) + (boxGap * 2);
-  const startX = (W - totalBoxW) / 2;
-
-  infoBoxes.forEach((box, i) => {
-    const bx = startX + i * (boxW + boxGap);
-    
-    ctx.save();
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "rgba(0,0,0,0.1)";
-    ctx.shadowBlur = 15;
-    ctx.shadowOffsetY = 5;
-    ctx.beginPath();
-    rrect(ctx, bx, ty, boxW, boxH, 20);
-    ctx.fill();
-    ctx.restore();
-    
-    // Icon
-    box.icon(ctx, bx + boxW / 2, ty + 55);
-    
-    // Label
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = `700 15px ${FAMILY}`;
-    ctx.letterSpacing = "2px";
-    ctx.fillText(box.label, bx + boxW / 2, ty + 110);
-    ctx.letterSpacing = "0px";
-    
-    // Value
-    ctx.fillStyle = box.color;
-    ctx.font = `900 26px ${FAMILY}`;
-    const lines = box.value.split("\n");
-    lines.forEach((line, li) => {
-      ctx.fillText(line, bx + boxW / 2, ty + 148 + li * 32);
-    });
-  });
-
-  // ---- FOOTER ----
-  ty = ty + boxH + 35;
-  
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#0d5e4a";
-  ctx.font = `900 24px ${FAMILY}`;
-  ctx.letterSpacing = "4px";
-  ctx.fillText("#FRAMEINGOA", W / 2, ty + 20);
-  ctx.letterSpacing = "0px";
-
-  // Date badge at bottom
-  ctx.save();
-  ctx.fillStyle = "#1f2937";
-  ctx.beginPath();
-  rrect(ctx, W / 2 - 200, ty + 45, 400, 60, 30);
-  ctx.fill();
-  
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = `700 15px ${FAMILY}`;
-  ctx.fillText("OCT", W / 2 - 60, ty + 72);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `900 32px ${FAMILY}`;
-  ctx.fillText("28-31", W / 2 + 30, ty + 80);
-  ctx.fillStyle = "#14b8a6";
-  ctx.font = `700 15px ${FAMILY}`;
-  ctx.fillText("2026", W / 2 + 120, ty + 72);
-  ctx.restore();
-
   // Bottom decorative line
   ctx.fillStyle = borderGrad;
   ctx.fillRect(24, H - 8, W - 48, 8);
